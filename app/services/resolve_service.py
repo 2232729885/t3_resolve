@@ -39,8 +39,9 @@ def _build_user_content(request: ResolveBatchRequest) -> str:
         else:
             parts.append(f"candidates ({len(item.candidates)}):")
             for c in item.candidates:
+                name_display = c.canonical_name if c.canonical_name else "(name unavailable, judge mainly by recallScore/retrievalChannels/attributes)"
                 parts.append(
-                    f"  - entityId={c.entity_id}, canonicalName={c.canonical_name!r}, type={c.type}, "
+                    f"  - entityId={c.entity_id}, canonicalName={name_display!r}, type={c.type}, "
                     f"aliases={c.aliases}, importanceScore={c.importance_score}, "
                     f"attributes={c.attributes}, recallScore={c.score}, "
                     f"retrievalChannels={c.retrieval_channels}"

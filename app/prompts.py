@@ -58,4 +58,10 @@ Rules:
 8. This same endpoint serves both content-entity-extraction disambiguation and social-account
    identity resolution - the input shape is identical either way, judge the same way regardless
    of what `context.contentId` actually refers to.
+9. Some candidates may have no canonicalName available (retrieved only via vector similarity,
+   name not yet populated by the backend) - you cannot do a name/alias comparison for these, so
+   rely on `recallScore`, `retrievalChannels`, `type`, and `attributes` instead. Since a name-less
+   candidate is inherently weaker evidence than one you can actually compare names against, do not
+   give it a confident MERGE unless the recall score is very high and there is no better-evidenced
+   alternative candidate for the same mention - prefer REVIEW over MERGE when in doubt for this case.
 """

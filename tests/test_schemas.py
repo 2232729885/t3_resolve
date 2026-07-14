@@ -263,3 +263,46 @@ def test_422_validation_errors_are_logged_with_detail(caplog):
     assert resp.status_code == 422
     assert any("422 Unprocessable Entity" in record.message for record in caplog.records)
     assert any("not-a-list" in record.message for record in caplog.records)
+
+
+def test_candidate_with_null_canonical_name_from_vector_only_recall():
+    """
+    2026-07-14生产环境真实422错误：纯向量召回（VECTOR_INDEX，没有同时命中NAME_INDEX）的
+    候选实体，后端目前不一定会额外查一次canonicalName，这种情况下这个字段是null，
+    T3必须能正常处理，不能校验失败。这里用真实报错数据里的一条候选原样复现。
+    """
+    sample = {
+        "items": [
+            {
+                "mention": {
+                    "mentionId": "m2",
+                    "name": "Sabah",
+                    "canonicalName": "Sabah",
+                    "type": "location",
+                    "aliases": [],
+                    "attributes": {},
+                },
+                "candidates": [
+                    {
+                        "entityId": "2c15dbf7-f0df-3f6b-acd0-3ff56028fc06",
+                        "canonicalName": None,
+                        "type": "location",
+                        "aliases": [],
+                        "importanceScore": None,
+                        "attributes": {},
+                        "score": 0.7,
+                        "retrievalChannels": ["VECTOR_INDEX"],
+                    }
+                ],
+                "context": {
+                    "contentId": "bb3b8500-e65d-4f51-bbb0-d40274531a59",
+                    "platform": "reddit",
+                    "textWindow": "Sabah",
+                    "language": "en",
+                },
+            }
+        ],
+        "strategy": {"autoMergeThreshold": 0.9, "reviewThreshold": 0.6},
+    }
+    request = ResolveBatchRequest.model_validate(sample)
+    assert request.items[0].candidates[0].canonical_name is None

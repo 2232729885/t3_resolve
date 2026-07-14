@@ -35,7 +35,10 @@ class Mention(CamelModel):
 
 class Candidate(CamelModel):
     entity_id: str
-    canonical_name: str
+    # 允许为空——通过向量召回（VECTOR_INDEX）但没有同时命中ES名称匹配（NAME_INDEX）的候选，
+    # 后端目前不一定会额外查一次实体的标准名，这种情况下这个字段会是null，
+    # T3这边要能正常处理，不能直接校验失败
+    canonical_name: Optional[str] = None
     type: str
     aliases: list[str] = []
     importance_score: Optional[float] = None
