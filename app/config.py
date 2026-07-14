@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # LLM调用参数
     llm_temperature: float = 0.2
-    llm_max_tokens: int = 4096
+    llm_max_tokens: int = 8192
     llm_timeout_seconds: int = 60
     llm_max_retries: int = 2
     # vLLM 是否支持 response_format={"type":"json_object"} 取决于具体版本/启动参数，
