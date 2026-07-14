@@ -48,6 +48,45 @@ def test_request_parses_real_scenario_with_candidates():
     assert request.strategy.auto_merge_threshold == 0.9
 
 
+def test_null_attributes_and_aliases_are_treated_as_empty():
+    """
+    2026-07-14生产环境真实422错误：Java的Map<String,Object> attributes字段没值时
+    序列化成显式null，之前的null兜底逻辑只处理了list没处理裸dict类型，校验直接失败。
+    """
+    sample = {
+        "items": [
+            {
+                "mention": {
+                    "mentionId": "m1",
+                    "name": "CENTCOM",
+                    "canonicalName": "U.S. Central Command",
+                    "type": "organization",
+                    "aliases": None,
+                    "attributes": None,
+                },
+                "candidates": [
+                    {
+                        "entityId": "e1",
+                        "canonicalName": "U.S. Central Command",
+                        "type": "organization",
+                        "aliases": None,
+                        "attributes": None,
+                        "score": 0.9,
+                        "retrievalChannels": None,
+                    }
+                ],
+                "context": None,
+            }
+        ],
+        "strategy": {"autoMergeThreshold": 0.9, "reviewThreshold": 0.6},
+    }
+    request = ResolveBatchRequest.model_validate(sample)
+    assert request.items[0].mention.attributes == {}
+    assert request.items[0].mention.aliases == []
+    assert request.items[0].candidates[0].attributes == {}
+    assert request.items[0].candidates[0].retrieval_channels == []
+
+
 def test_request_with_empty_candidates_is_valid():
     request = ResolveBatchRequest.model_validate(
         {
